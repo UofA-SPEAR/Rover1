@@ -1,6 +1,11 @@
 # SPEAR ROVER 1 
 This directory is the main catkin package for the rover. This README will describe the important files, possible errors, and other info. 
 
+# Dependencies:
+To run the project we need:
+- ps3joy (http://wiki.ros.org/ps3joy)
+- serial library (catkin package - https://github.com/wjwwood/serial)
+
 # Project Heirarchy
 rover1/msg/ contains all custom .msg files used by ROS. More info on .msg files can be found on the ROS wiki
 
@@ -12,7 +17,7 @@ rover1/src/launch/ contains the launch file used for the project. The launch fil
 When using this project, it should be placed within the src folder of a catkin workspace. To build the project, navigate to the main directory of the catkin workspace and run: `catkin-make`. This will build the projects located in the catkin workspace.
 
 # Running the Project
-To run the project we need to run two things: the main ROS rover project and ps3joy. Ps3joy is a python script that creates a ROS node to connect to a ps3 controller (more info can be found here: http://wiki.ros.org/ps3joy)
+To run the project we need to run two things: the main ROS rover project and ps3joy. Ps3joy is a python script that creates a ROS node to connect to a ps3 controller (more info can be found here.
 
 Therefore to run the project first navigate to the catkin workspace and start the ps3joy node and follow the prompts to connect the ps3 controller:
 `rosrun ps3joy ps3joy.py`
