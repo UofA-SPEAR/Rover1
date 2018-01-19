@@ -25,4 +25,7 @@ Therefore to run the project first navigate to the catkin workspace and start th
 Next, in a seperate terminal navigate to the catkin workspace and start the main project:
 `roslaunch rover1 rover1.launch1`
 
+# Common Errors when Running:
+"Unable to contact my own server at ..." : To run ROS we have static IPS setup on both the Raspberry Pi and the Nvidia TX2 under the "Static IP" network connection. Therefore to fix this error, make sure that you are connected to the "Static IP" network on the Jetson. 
+
 
