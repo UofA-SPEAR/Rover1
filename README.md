@@ -28,4 +28,10 @@ Next, in a seperate terminal navigate to the catkin workspace and start the main
 # Common Errors when Running:
 "Unable to contact my own server at ..." : To run ROS we have static IPS setup on both the Raspberry Pi and the Nvidia TX2 under the "Static IP" network connection. Therefore to fix this error, make sure that you are connected to the "Static IP" network on the Jetson. 
 
+"NO ARDUINO CONNECTED, PLEASE RESTART THE PROGRAM WITH ARDUINO CONNECTED TO THE USB HUB." : The program is looking for an arduino on the /dev/ttyUSB0 port and cannot find it. Therefore, restart the ROS program and make sure the Arduino is connected. 
+
+"Couldn't open joystick /dv/input/js0. Will retry every second.": This error means that the program cannot find the ps3 controller. Make sure that you have run the ps3joy script before the main rover program. 
+
+
+
 
