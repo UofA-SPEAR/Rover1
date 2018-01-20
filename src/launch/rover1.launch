@@ -12,10 +12,10 @@
 
   <node pkg="rover1" type="central_control" name="central_control_node" output="screen"/>
 
-  <node pkg="rover1" type="drive_serial" name="drive_serial_node" output="screen"/>
-
   <node pkg="rover1" type="arm_serial" name="arm_serial_node"
   output="screen"/>
+
+  <node pkg="rover1" type="drive_serial" name="drive_serial_node" output="screen"/>
   
   <!--
   <node pkg="rosserial_python" type="serial_node.py" name="serial_node">
