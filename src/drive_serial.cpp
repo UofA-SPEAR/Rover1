@@ -34,7 +34,10 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
   baud_(baud_num),
   my_serial(this->port_, baud_,
       serial::Timeout::simpleTimeout(1000)) {
-   
+  
+  // TODO(Jordan): May want to send handshake msg with Arduino 
+  // AKA double check that it isn't a different device on that port
+
   ROS_INFO("Port = %s", port_.c_str());
   ROS_INFO("Baud = %d", baud_);
   ROS_INFO("Port Open? [%s]", my_serial.isOpen() ? "Yes" : "No");
@@ -88,22 +91,18 @@ int main(int argc, char **argv) {
      arduino_port = "/dev/ttyACM0";
   }
 
-  // TODO(Jordan) Possibly may want to send a handshake msg at the beginning to
-  // confirm that it is an arduino plugged into the USB
-
   if (arduino_port.empty()) {
     ROS_ERROR("NO ARDUINO CONNECTED. PLEASE RESTART THE PROGRAM "
       "WITH ARDUINO CONNECTED TO THE USB HUB");
     exit(EXIT_FAILURE);
   }
 
-
   // Initialize the Serial Node object
   Drive_Serial serial_node(arduino_port, def_baud);
 
-  /* Initialize the Serial Node with port + baud */
-  // Drive_Serial serial_node(argv[1], argv[2]);
-
+  // TODO(Jordan): Restructure code to while loop and ros:spinOnce()
+  // Therefore, we can constantly send msgs to the arduino
+  // (instead of only sending msgs when the callback is called)
   ros::spin();
   return 0;
 }
