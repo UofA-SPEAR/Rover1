@@ -11,7 +11,6 @@
 
 class Drive_Serial {
  public:
-    Drive_Serial();
     Drive_Serial(std::string port, uint32_t baud);
 
  private:
@@ -27,26 +26,18 @@ class Drive_Serial {
 };
 
 
-// Drive_Serial Object Constructor
-Drive_Serial::Drive_Serial():
+// Drive_Serial Object Constructor with specified Port + Num. Currently not used
+Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
   mtude_(0),
   dir_(0),
-  port_("/dev/ttyUSB0"),
-  baud_(9600), 
-  my_serial(port_, baud_, serial::Timeout::simpleTimeout(1000)) {
-
-  /* nh_.param("port", port_, port_); */
-  /* nh_.param("baud", baud_, baud_); */
-  std::string is_open = "No";
-  if(my_serial.isOpen()){
-    is_open = "Yes";
-  }
-  else{
-    ROS_INFO("No arduino connected to /dev/ttyUSB0. Please check your connection");
-  }
+  port_(port_str),
+  baud_(baud_num),
+  my_serial(this->port_, baud_,
+      serial::Timeout::simpleTimeout(1000)) {
+   
   ROS_INFO("Port = %s", port_.c_str());
   ROS_INFO("Baud = %d", baud_);
-  ROS_INFO("Port Open? [%s]", is_open.c_str());
+  ROS_INFO("Port Open? [%s]", my_serial.isOpen() ? "Yes" : "No");
 
   // Initialize the control_cmd_sub
   control_cmd_sub = nh_.subscribe("/drive_topic", 10,
@@ -54,21 +45,7 @@ Drive_Serial::Drive_Serial():
 }
 
 
-// Drive_Serial Object Constructor with specified Port + Num. Currently not used
-Drive_Serial::Drive_Serial(const std::string port_num, uint32_t baud_num):
-  mtude_(0),
-  dir_(0),
-  port_(port_num),
-  baud_(baud_num),
-  my_serial(this->port_, (uint32_t)this->baud_,
-      serial::Timeout::simpleTimeout(1000)) {
-  // Initialize the control_cmd_sub
-  control_cmd_sub = nh_.subscribe("/drive_topic", 10,
-      &Drive_Serial::centralControlCallback, this);
-}
-
-
-// Callback of the topic /numbers
+// Callback
 void Drive_Serial::centralControlCallback(
     const rover1::drive_cmd::ConstPtr& msg) {
 
@@ -76,11 +53,12 @@ void Drive_Serial::centralControlCallback(
   ROS_INFO("[DRIVE] Polar Angle  [%f]", msg->polar_angle);
 
   // TODO(jordan/mark): Forward this data to the Arduino
+
   std::stringstream stream;
   stream << std::fixed << std::setprecision(5) << msg->magnitude;
   const std::string str = stream.str();
 
-  ROS_INFO("[DRIVE] Sending [%s]", str.c_str());
+  // ROS_INFO("[DRIVE] Sending [%s]", str.c_str());
 
   uint8_t buf;
   size_t bytes_sent = this->my_serial.write(str);
@@ -95,19 +73,36 @@ int main(int argc, char **argv) {
   // Initializing ROS node with a name of demo_topic_subscriber
   ros::init(argc, argv, "drive_serial");
 
-  // Check if there is a device connected to ttyUSB0
+  std::string arduino_port;
+  uint32_t def_baud = 9600;
+
+  // Check if the arduino is connected to ttyUSB0
   DIR* dir = opendir("/dev/ttyUSB0");
-  if(ENOENT == errno) {
+  if (ENOENT != errno) {
+     arduino_port = "/dev/ttyUSB0";
+  }
+
+  // Check if the arduino is connected to ttyACM0
+  dir = opendir("/dev/ttyACM0");
+  if (ENOENT != errno) {
+     arduino_port = "/dev/ttyACM0";
+  }
+
+  // TODO(Jordan) Possibly may want to send a handshake msg at the beginning to
+  // confirm that it is an arduino plugged into the USB
+
+  if (arduino_port.empty()) {
     ROS_ERROR("NO ARDUINO CONNECTED. PLEASE RESTART THE PROGRAM "
-        "WITH ARDUINO CONNECTED TO THE USB HUB");
+      "WITH ARDUINO CONNECTED TO THE USB HUB");
     exit(EXIT_FAILURE);
   }
 
+
   // Initialize the Serial Node object
-  Drive_Serial serial_node;
+  Drive_Serial serial_node(arduino_port, def_baud);
 
   /* Initialize the Serial Node with port + baud */
-  //Drive_Serial serial_node(argv[1], argv[2]);
+  // Drive_Serial serial_node(argv[1], argv[2]);
 
   ros::spin();
   return 0;
