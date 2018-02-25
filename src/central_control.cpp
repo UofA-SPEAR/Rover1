@@ -24,7 +24,7 @@ class Central_Control {
 
 Central_Control::Central_Control() {
   // Initialize publisher
-  drive_pub = nh_.advertise<rover1::drive_cmd>("/drive_topic", 10);
+  drive_pub = nh_.advertise<rover1::controller>("/drive_topic", 10);
   arm_pub = nh_.advertise<rover1::controller>("/arm_topic", 10);
 
   // Intialize subscriber
@@ -38,16 +38,7 @@ void Central_Control::cmdCallback(const rover1::controller::ConstPtr& msg) {
   if (msg->state) {
     arm_pub.publish(msg);
   } else {
-    rover1::drive_cmd drive_msg;
-    double mtude = 0;
-    double angle = 0;
-
-    Central_Control::recToPolar(msg->x_coord, msg->y_coord, mtude, angle);
-
-    drive_msg.magnitude = mtude;
-    drive_msg.polar_angle = angle;
-
-    drive_pub.publish(drive_msg);
+    drive_pub.publish(msg);
   }
 }
 

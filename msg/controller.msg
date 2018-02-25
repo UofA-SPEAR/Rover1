@@ -1,3 +1,3 @@
-float32 x_coord
-float32 y_coord
+float32 left_stick
+float32 right_stick
 int8 state

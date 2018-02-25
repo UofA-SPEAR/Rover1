@@ -6,6 +6,8 @@
 #include <unistd.h>
 
 #define Pi acos(-1.0)
+#define PS3_AXIS_STICK_LEFT_UPWARDS 1
+#define PS3_AXIS_STICK_RIGHT_UPWARDS 3
 
 class User_Input {
  public:
@@ -31,7 +33,7 @@ User_Input::User_Input():
   x_idx_(2),
   y_idx_(1),
   tri_idx_(12),
-  x_scale_(-1),
+  x_scale_(1),
   y_scale_(1) {
   // Initialize publisher
   controller_cmd_pub = nh_.advertise<rover1::controller>
@@ -56,8 +58,8 @@ void User_Input::ps3Callback(const sensor_msgs::Joy::ConstPtr& ps3_msg) {
 
   size_axis = sizeof(ps3_msg->axes);
   size_button = sizeof(ps3_msg->buttons);
-  msg.x_coord = x_scale_*ps3_msg->axes[x_idx_];
-  msg.y_coord = y_scale_*ps3_msg->axes[y_idx_];
+  msg.left_stick = x_scale_*ps3_msg->axes[PS3_AXIS_STICK_LEFT_UPWARDS];
+  msg.right_stick = y_scale_*ps3_msg->axes[PS3_AXIS_STICK_RIGHT_UPWARDS];
   msg.state = state_;
 
   //ROS_INFO("LEFT: [%f]", msg.x_coord);

@@ -1,7 +1,7 @@
 #include <dirent.h>
 #include <iostream>
 #include <rover1/controller.h>
-#include <rover1/drive_cmd.h>
+#include <rover1/controller.h>
 #include <string>
 #include <sstream>
 #include "ros/ros.h"
@@ -22,7 +22,7 @@ class Drive_Serial {
     ros::Subscriber control_cmd_sub;
     serial::Serial my_serial;
 
-    void centralControlCallback(const rover1::drive_cmd::ConstPtr& msg);
+    void centralControlCallback(const rover1::controller::ConstPtr& msg);
 };
 
 
@@ -33,7 +33,7 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
   port_(port_str),
   baud_(baud_num),
   my_serial(this->port_, baud_,
-  serial::Timeout::simpleTimeout(2000)) {
+  serial::Timeout::simpleTimeout(1)) {
   // TODO(Jordan): May want to send handshake msg with Arduino
   // AKA double check that it isn't a different device on that port
 
@@ -49,25 +49,24 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
 
 // Callback
 void Drive_Serial::centralControlCallback(
-    const rover1::drive_cmd::ConstPtr& msg) {
+    const rover1::controller::ConstPtr& msg) {
   size_t bytes_read;
   size_t bytes_sent;
   std::string buf;
   std::stringstream stream;
 
-  ROS_INFO("[DRIVE] Magnitude  [%f]", msg->magnitude);
-  ROS_INFO("[DRIVE] Polar Angle  [%f]", msg->polar_angle);
+  ROS_INFO("[DRIVE] Left Stick  [%f]", msg->left_stick);
+  ROS_INFO("[DRIVE] Right Stick  [%f]", msg->right_stick);
 
   // TODO(jordan/mark): Forward this data to the Arduino
 
-  stream << std::fixed << std::setprecision(5) << msg->magnitude
-    << " " << msg->polar_angle;
+  stream << std::fixed << std::setprecision(5) << msg->left_stick
+    << " " << msg->right_stick << std::endl;
   const std::string str = stream.str();
 
   ROS_INFO("[DRIVE] Sending [%s]", str.c_str());
 
   bytes_sent = this->my_serial.write(str);
-  /* bytes_read = this->my_serial.read(&buf, str.length()); */
   buf = this->my_serial.readline();
 
   /* ROS_INFO("[DRIVE] Bytes Sent [%zu]", bytes_sent); */
