@@ -33,9 +33,8 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
   port_(port_str),
   baud_(baud_num),
   my_serial(this->port_, baud_,
-      serial::Timeout::simpleTimeout(1000)) {
-  
-  // TODO(Jordan): May want to send handshake msg with Arduino 
+  serial::Timeout::simpleTimeout(2000)) {
+  // TODO(Jordan): May want to send handshake msg with Arduino
   // AKA double check that it isn't a different device on that port
 
   ROS_INFO("Port = %s", port_.c_str());
@@ -51,24 +50,28 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
 // Callback
 void Drive_Serial::centralControlCallback(
     const rover1::drive_cmd::ConstPtr& msg) {
+  size_t bytes_read;
+  size_t bytes_sent;
+  std::string buf;
+  std::stringstream stream;
 
   ROS_INFO("[DRIVE] Magnitude  [%f]", msg->magnitude);
   ROS_INFO("[DRIVE] Polar Angle  [%f]", msg->polar_angle);
 
   // TODO(jordan/mark): Forward this data to the Arduino
 
-  std::stringstream stream;
-  stream << std::fixed << std::setprecision(5) << msg->magnitude;
+  stream << std::fixed << std::setprecision(5) << msg->magnitude
+    << " " << msg->polar_angle;
   const std::string str = stream.str();
 
-  // ROS_INFO("[DRIVE] Sending [%s]", str.c_str());
+  ROS_INFO("[DRIVE] Sending [%s]", str.c_str());
 
-  uint8_t buf;
-  size_t bytes_sent = this->my_serial.write(str);
-  size_t bytes_read = this->my_serial.read(&buf, str.length());
+  bytes_sent = this->my_serial.write(str);
+  /* bytes_read = this->my_serial.read(&buf, str.length()); */
+  buf = this->my_serial.readline();
 
-  ROS_INFO("[DRIVE] Bytes Sent [%zu]", bytes_sent);
-  ROS_INFO("[DRIVE] Read [%s] [%zu bytes]", &buf, bytes_read);
+  /* ROS_INFO("[DRIVE] Bytes Sent [%zu]", bytes_sent); */
+  ROS_INFO("[DRIVE] Read %s [%zu bytes]", buf.c_str(), buf.length());
 }
 
 
