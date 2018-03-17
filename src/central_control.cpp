@@ -24,7 +24,7 @@ class Central_Control {
 
 Central_Control::Central_Control() {
   // Initialize publisher
-  drive_pub = nh_.advertise<rover1::controller>("/drive_topic", 10);
+  drive_pub = nh_.advertise<rover1::drive_cmd>("/drive_topic", 10);
   arm_pub = nh_.advertise<rover1::controller>("/arm_topic", 10);
 
   // Intialize subscriber
