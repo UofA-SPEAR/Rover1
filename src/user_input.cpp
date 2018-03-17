@@ -35,8 +35,7 @@ User_Input::User_Input():
   tri_idx_(12),
   x_scale_(1),
   y_scale_(1) {
-  // Initialize publ
-    isher
+  // Initialize publisher
   controller_cmd_pub = nh_.advertise<rover1::controller>
     ("/user_commands", 10);
 
