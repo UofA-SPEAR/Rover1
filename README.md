@@ -14,7 +14,7 @@ rover1/src/ contains all src files for the project. This includes the code for e
 rover1/src/launch/ contains the launch file used for the project. The launch file is xml code that allows us to run all of the ROS nodes at the same time. More info can found below in "Running in the Project"
 
 # Building the Project
-When using this project, it should be placed within the src folder of a catkin workspace. To build the project, navigate to the main directory of the catkin workspace and run: `catkin_make`. This will build the projects located in the catkin workspace.
+When using this project, it should be placed within the src folder of a catkin workspace. To build the project, navigate to the main directory of the catkin workspace and run: `catkin-make`. This will build the projects located in the catkin workspace.
 
 # Running the Project
 To run the project we need to run two things: the main ROS rover project and ps3joy. Ps3joy is a python script that creates a ROS node to connect to a ps3 controller
