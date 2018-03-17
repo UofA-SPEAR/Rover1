@@ -6,6 +6,8 @@
 #include <unistd.h>
 
 #define Pi acos(-1.0)
+#define PS3_AXIS_STICK_LEFT_UPWARDS 1
+#define PS3_AXIS_STICK_RIGHT_UPWARDS 3
 
 class User_Input {
  public:
@@ -31,11 +33,10 @@ User_Input::User_Input():
   x_idx_(2),
   y_idx_(1),
   tri_idx_(12),
-  x_scale_(-1),
+  x_scale_(1),
   y_scale_(1) {
-  /* nh_.param("axis_linear", linear_, linear_); */
-
-  // Initialize publisher
+  // Initialize publ
+    isher
   controller_cmd_pub = nh_.advertise<rover1::controller>
     ("/user_commands", 10);
 
@@ -46,22 +47,22 @@ User_Input::User_Input():
 
 void User_Input::ps3Callback(const sensor_msgs::Joy::ConstPtr& ps3_msg) {
   rover1::controller msg;
+  size_t size_axis;
+  size_t size_button;
 
   if (ps3_msg->buttons[tri_idx_]) {
     state_ = state_ ^ 1;
-    // Delay to keep ROS from reading the button multiple times when pressed
-    // Number probs need to be change / finalized
-    usleep(50000);
+    //TODO: Experiment with this
+    usleep(50000); 
   }
 
-  size_t size_axis = sizeof(ps3_msg->axes);
-  size_t size_button = sizeof(ps3_msg->buttons);
-  msg.x_coord = x_scale_*ps3_msg->axes[x_idx_];
-  msg.y_coord = y_scale_*ps3_msg->axes[y_idx_];
+  size_axis = sizeof(ps3_msg->axes);
+  size_button = sizeof(ps3_msg->buttons);
+  msg.left_stick = x_scale_*ps3_msg->axes[PS3_AXIS_STICK_LEFT_UPWARDS];
+  msg.right_stick = y_scale_*ps3_msg->axes[PS3_AXIS_STICK_RIGHT_UPWARDS];
   msg.state = state_;
 
-  //ROS_INFO("LEFT: [%f]", msg.x_coord);
-  //ROS_INFO("RIGHT: [%f]", msg.y_coord);
+  ROS_INFO("MSG STATE %i", msg.state);
 
   // Publish the ps3 controller's velocity parameters
   controller_cmd_pub.publish(msg);

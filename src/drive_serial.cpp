@@ -1,7 +1,6 @@
 #include <dirent.h>
 #include <iostream>
 #include <rover1/controller.h>
-#include <rover1/drive_cmd.h>
 #include <string>
 #include <sstream>
 #include "ros/ros.h"
@@ -22,7 +21,7 @@ class Drive_Serial {
     ros::Subscriber control_cmd_sub;
     serial::Serial my_serial;
 
-    void centralControlCallback(const rover1::drive_cmd::ConstPtr& msg);
+    void centralControlCallback(const rover1::controller::ConstPtr& msg);
 };
 
 
@@ -33,8 +32,10 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
   port_(port_str),
   baud_(baud_num),
   my_serial(this->port_, baud_,
-      serial::Timeout::simpleTimeout(1000)) {
-   
+  serial::Timeout::simpleTimeout(1)) {
+  // TODO(Jordan): May want to send handshake msg with Arduino
+  // AKA double check that it isn't a different device on that port
+
   ROS_INFO("Port = %s", port_.c_str());
   ROS_INFO("Baud = %d", baud_);
   ROS_INFO("Port Open? [%s]", my_serial.isOpen() ? "Yes" : "No");
@@ -47,31 +48,34 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
 
 // Callback
 void Drive_Serial::centralControlCallback(
-    const rover1::drive_cmd::ConstPtr& msg) {
-
-  ROS_INFO("[DRIVE] Magnitude  [%f]", msg->magnitude);
-  ROS_INFO("[DRIVE] Polar Angle  [%f]", msg->polar_angle);
-
-  // TODO(jordan/mark): Forward this data to the Arduino
-
+    const rover1::controller::ConstPtr& msg) {
+  size_t bytes_read;
+  size_t bytes_sent;
+  std::string buf;
   std::stringstream stream;
-  stream << std::fixed << std::setprecision(5) << msg->magnitude;
+
+  ROS_INFO("[DRIVE] Left Stick  [%f]", msg->left_stick);
+  ROS_INFO("[DRIVE] Right Stick  [%f]", msg->right_stick);
+
+  stream << std::fixed << std::setprecision(5) << msg->left_stick
+    << " " << msg->right_stick << std::endl;
   const std::string str = stream.str();
 
-  // ROS_INFO("[DRIVE] Sending [%s]", str.c_str());
+  ROS_INFO("[DRIVE] Sending [%s]", str.c_str());
 
-  uint8_t buf;
-  size_t bytes_sent = this->my_serial.write(str);
-  size_t bytes_read = this->my_serial.read(&buf, str.length());
+  bytes_sent = this->my_serial.write(str);
+  buf = this->my_serial.readline();
 
-  ROS_INFO("[DRIVE] Bytes Sent [%zu]", bytes_sent);
-  ROS_INFO("[DRIVE] Read [%s] [%zu bytes]", &buf, bytes_read);
+  /* ROS_INFO("[DRIVE] Bytes Sent [%zu]", bytes_sent); */
+  ROS_INFO("[DRIVE] Read %s [%zu bytes]", buf.c_str(), buf.length());
 }
 
 
 int main(int argc, char **argv) {
   // Initializing ROS node with a name of demo_topic_subscriber
   ros::init(argc, argv, "drive_serial");
+
+  // TODO(jordan/mark) restructure the code for two arduinos
 
   std::string arduino_port;
   uint32_t def_baud = 9600;
@@ -88,22 +92,19 @@ int main(int argc, char **argv) {
      arduino_port = "/dev/ttyACM0";
   }
 
-  // TODO(Jordan) Possibly may want to send a handshake msg at the beginning to
-  // confirm that it is an arduino plugged into the USB
-
   if (arduino_port.empty()) {
     ROS_ERROR("NO ARDUINO CONNECTED. PLEASE RESTART THE PROGRAM "
       "WITH ARDUINO CONNECTED TO THE USB HUB");
     exit(EXIT_FAILURE);
   }
 
-
   // Initialize the Serial Node object
-  Drive_Serial serial_node(arduino_port, def_baud);
+  Drive_Serial serial_node(arduino_port, def_baud)
 
-  /* Initialize the Serial Node with port + baud */
-  // Drive_Serial serial_node(argv[1], argv[2]);
-
+  // TODO(mark/jordan): Restructure code to while loop and ros:spinOnce()
+  // Therefore, we can constantly send msgs to the arduino
+  // (instead of only sending msgs when the callback is called)
+  
   ros::spin();
   return 0;
 }

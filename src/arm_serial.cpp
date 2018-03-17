@@ -1,6 +1,9 @@
+#include <dirent.h>
 #include <iostream>
 #include <rover1/controller.h>
 #include <string>
+#include <sstream>
+#include <unistd.h>
 #include "ros/ros.h"
 #include "serial/serial.h"
 #include "std_msgs/Int32.h"
@@ -13,13 +16,12 @@
 
 class Arm_Serial {
  public:
-    Arm_Serial();
-    Arm_Serial(std::string port, uint32_t baud);
+    Arm_Serial(std::string port_num, uint32_t baud_num);
 
  private:
     // Place holders until we determine what actual values we want to send to
     // the Arm Ardino
-    double motor1_, motor2_, motor3_, motor4_, motor5_, motor6_;
+    int angle_, stepper_num_;
     const std::string port_;
     uint32_t baud_;
 
@@ -30,29 +32,8 @@ class Arm_Serial {
     void centralControlCallback(const rover1::controller::ConstPtr& msg);
 };
 
-
-// Legacy Arm_Serial Object Constructor
-Arm_Serial::Arm_Serial():
-  motor1_(0),
-  motor2_(0),
-  motor3_(0),
-  motor4_(0),
-  motor5_(0),
-  motor6_(0) {
-  // Initialize the control_cmd_sub
-  arm_cmd_sub = nh_.subscribe("/arm_topic", 10,
-      &Arm_Serial::centralControlCallback, this);
-}
-
-
 // Arm_Serial Object Constructor with Port + Baud
 Arm_Serial::Arm_Serial(std::string port_num, uint32_t baud_num):
-  motor1_(0),
-  motor2_(0),
-  motor3_(0),
-  motor4_(0),
-  motor5_(0),
-  motor6_(0),
   port_(port_num),
   baud_(baud_num),
   my_serial(port_, baud_, serial::Timeout::simpleTimeout(1000)) {
@@ -66,27 +47,58 @@ Arm_Serial::Arm_Serial(std::string port_num, uint32_t baud_num):
 void Arm_Serial::centralControlCallback(
     const rover1::controller::ConstPtr& msg) {
 
-  ROS_INFO("[ARM] X Coord  [%f]", msg->x_coord);
-  ROS_INFO("[ARM] Y Coord  [%f]", msg->y_coord);
+  // TODO(jordan): change specific message sent to arm
 
-  // TODO(jordan/mark): Forward this data to the Arduino
+  size_t bytes_sent;
+  std::string buf;
+  std::stringstream stream;
+
+  ROS_INFO("[ARM] Left Stick  [%f]", msg->left_stick);
+  ROS_INFO("[ARM] Right stick  [%f]", msg->right_stick);
+
+  // Create msg that is sent to the Arduino
+  stream << std::fixed << std::setprecision(5) << msg->left_stick
+    << " " << msg->right_stick << std::endl;
+
+  const std::string str = stream.str();
+
+  ROS_INFO("[ARM] Sending [%s]", str.c_str());
+
+  bytes_sent = this->my_serial.write(str);
+  buf = this->my_serial.readline();
+
+  ROS_INFO("[ARM] Read %s [%zu bytes]", buf.c_str(), buf.length());
 }
 
 
 int main(int argc, char **argv) {
-  /*
-   * CURRENT THOUGHT:The Arduino on the arm may be using C++ and 
-   * the Arduino IDE, so it may be better to use ROS Serial (IDK)
-   * Otherwise, we just need to decode the data on the arduino side
-   */
-
   // Initializing ROS node with a name of demo_topic_subscriber
   ros::init(argc, argv, "arm_serial");
 
-  // Initialize the Serial Node object
-  Arm_Serial serial_node;
+//  std::string arduino_port;
+//  uint32_t def_baud = 9600;
 
-  /*Arm_Serial serial_node(argv[1], argv[2]); */
+  // TODO(jordan): Probs need to change this if we have two arduinos connected
+
+  // Check if the arduino is connected to ttyUSB0
+//  DIR* dir = opendir("/dev/ttyUSB0");
+//  if (ENOENT != errno) {
+//    arduino_port = "/dev/ttyUSB0";
+//  }
+
+//  dir = opendir("/dev/ttyACM0");
+//  if (ENOENT != errno) {
+//    arduino_port = "/dev/ttyACM0";
+//  }
+
+//  if (arduino_port.empty()) {
+//    ROS_ERROR("NO ARDUINO CONNECTED. PLEASE RESTART THE PROGRAM "
+//        "WITH ARDUINO CONNECTED TO THE USB PORT");
+//    exit(EXIT_FAILURE);
+//  }
+
+  // Initialize the Serial Node object
+//  Arm_Serial serial_node(arduino_port, def_baud);
 
   ros::spin();
   return 0;
