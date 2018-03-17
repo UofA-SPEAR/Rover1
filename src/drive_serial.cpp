@@ -1,7 +1,6 @@
 #include <dirent.h>
 #include <iostream>
 #include <rover1/controller.h>
-#include <rover1/controller.h>
 #include <string>
 #include <sstream>
 #include "ros/ros.h"
@@ -58,8 +57,6 @@ void Drive_Serial::centralControlCallback(
   ROS_INFO("[DRIVE] Left Stick  [%f]", msg->left_stick);
   ROS_INFO("[DRIVE] Right Stick  [%f]", msg->right_stick);
 
-  // TODO(jordan/mark): Forward this data to the Arduino
-
   stream << std::fixed << std::setprecision(5) << msg->left_stick
     << " " << msg->right_stick << std::endl;
   const std::string str = stream.str();
@@ -77,6 +74,8 @@ void Drive_Serial::centralControlCallback(
 int main(int argc, char **argv) {
   // Initializing ROS node with a name of demo_topic_subscriber
   ros::init(argc, argv, "drive_serial");
+
+  // TODO(jordan/mark) restructure the code for two arduinos
 
   std::string arduino_port;
   uint32_t def_baud = 9600;
@@ -100,11 +99,12 @@ int main(int argc, char **argv) {
   }
 
   // Initialize the Serial Node object
-  Drive_Serial serial_node(arduino_port, def_baud);
+  Drive_Serial serial_node(arduino_port, def_baud)
 
-  // TODO(Jordan): Restructure code to while loop and ros:spinOnce()
+  // TODO(mark/jordan): Restructure code to while loop and ros:spinOnce()
   // Therefore, we can constantly send msgs to the arduino
   // (instead of only sending msgs when the callback is called)
+  
   ros::spin();
   return 0;
 }

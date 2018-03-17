@@ -51,9 +51,8 @@ void User_Input::ps3Callback(const sensor_msgs::Joy::ConstPtr& ps3_msg) {
 
   if (ps3_msg->buttons[tri_idx_]) {
     state_ = state_ ^ 1;
-    // Delay to keep ROS from reading the button multiple times when pressed
-    // Number probs need to be change / finalized
-    usleep(50000);
+    //TODO: Experiment with this
+    usleep(50000); 
   }
 
   size_axis = sizeof(ps3_msg->axes);
@@ -62,8 +61,7 @@ void User_Input::ps3Callback(const sensor_msgs::Joy::ConstPtr& ps3_msg) {
   msg.right_stick = y_scale_*ps3_msg->axes[PS3_AXIS_STICK_RIGHT_UPWARDS];
   msg.state = state_;
 
-  //ROS_INFO("LEFT: [%f]", msg.x_coord);
-  //ROS_INFO("RIGHT: [%f]", msg.y_coord);
+  ROS_INFO("MSG STATE %i", msg.state);
 
   // Publish the ps3 controller's velocity parameters
   controller_cmd_pub.publish(msg);
