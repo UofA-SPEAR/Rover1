@@ -1,7 +1,8 @@
 #include "ros/ros.h"
 #include "std_msgs/Int32.h"
 #include <rover1/controller.h>
-#include <rover1/drive_cmd.h>
+#include <rover1/input_arm.h>
+#include <rover1/input_drive.h>
 #include <iostream>
 #include <math.h>
 
@@ -30,6 +31,12 @@ Central_Control::Central_Control() {
   // Intialize subscriber
   usercmd_sub = nh_.subscribe("/user_commands", 10,
       &Central_Control::cmdCallback, this);
+
+  // Subscribers for user input from server controller
+  user_drive_sub = nh_.subscribe("/user_drive_commands", 10,
+      &Central_Control::userDriveCallback, this);
+  user_arm_sub = nh_.userArmsubscribe("/user_arm_commands", 10,
+      &Central_Control::cmdCallback, this);
 }
 
 // Command Callback
@@ -41,6 +48,15 @@ void Central_Control::cmdCallback(const rover1::controller::ConstPtr& msg) {
     drive_pub.publish(msg);
   }
 }
+
+void Central_Control::userDriveCallback(const rover1::input_drive::ConstPtr& msg) {
+  // TODO handle msg
+}
+
+void Central_Control::userArmCallback(const rover1::input_arm::ConstPtr& msg) {
+  // TODO handle msg
+}
+
 
 void Central_Control::recToPolar(double x, double y,
     double &r, double &theta) {
