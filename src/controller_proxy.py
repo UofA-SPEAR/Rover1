@@ -1,5 +1,6 @@
+#!/usr/bin/env python
+
 import rospy
-import urrlib
 import json
 import tornado.websocket
 import tornado.ioloop
@@ -9,36 +10,48 @@ from rover1.msg import input_arm
 from rover1.msg import input_drive
 
 class ControllerHandler(tornado.websocket.WebSocketHandler):
-    def __init__(self):
-    # Init publishers
-    arm_publisher = rospy.Publisher('/user_arm_commands', input_arm)
-    drive_publisher = rospy.Publisher('/user_drive_commands', input_drive)
+    def initialize(self):
+        if rospy.is_shutdown():
+            tornado.ioloop.IOLoop.current().stop()
+        # Init publishers
+        self.arm_publisher = rospy.Publisher('/user_arm_commands', input_arm, queue_size=10)
+        self.drive_publisher = rospy.Publisher('/user_drive_commands', input_drive, queue_size=10)
 
     def on_message(self, data):
-        json_msg = json.load(data)
+        json_msg = json.loads(data)
         if json_msg["type"] == "drive":
             # do the thing
             msg = input_drive
             msg.netAngle = json_msg["netAngle"]
             msg.netSpeed = json_msg["netSpeed"]
-            drive_publisher.publish(msg)
+            rospy.loginfo("Drive: NetAngle = [%lf]", msg.netAngle)
+            rospy.loginfo("Drive: NetSpeed = [%lf]", msg.netSpeed)
+            self.drive_publisher.publish(msg)
         elif msg["type"] == "arm":
             # do the thing
             msg = input_arm
             msg.elbow = json_msg["elbow"]
             msg.wrist = json_msg["wrist"]
             msg.fingers = json_msg["fingers"]
-            arm_publisher.publish(msg)
+            rospy.loginfo("Arm: Elbow = [%lf]", msg.elbow)
+            rospy.loginfo("Arm: Fingers = [%lf]", msg.fingers)
+            rospy.loginfo("Arm: Wrist = [%lf]", msg.wrist)
+            self.arm_publisher.publish(msg)
 
+    def check_origin(self, origin):
+        return True
 
-if __name == "__main__":
+if __name__ == "__main__":
+    rospy.init_node('controller_proxy', log_level=rospy.INFO)
+    rate = rospy.Rate(2)
     application = tornado.web.Application([
         ("/websocket", ControllerHandler)
     ])
     application.listen(9090)
-    tornado.IOLoop.current().start()
+    try:
+        tornado.ioloop.IOLoop.current().start()
+    except KeyboardInterrupt:
+        tornado.ioloop.IOLoop.current().stop()
 
-    rate = rospy.Rate(2)
-    rospy.init_node('controller_proxy', log_level=rospy.INFO)
-    while not rospy.is_shutdown():
-        rate.sleep()
+    # while not rospy.is_shutdown():
+    #     rate.sleep()
