@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
   }
 
   // Initialize the Serial Node object
-  Drive_Serial serial_node(arduino_port, def_baud)
+  Drive_Serial serial_node(arduino_port, def_baud);
 
   // TODO(mark/jordan): Restructure code to while loop and ros:spinOnce()
   // Therefore, we can constantly send msgs to the arduino
