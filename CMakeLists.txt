@@ -54,6 +54,8 @@ add_message_files(
   FILES
   controller.msg
   drive_cmd.msg
+  input_arm.msg
+  input_drive.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -178,6 +180,10 @@ target_link_libraries(arm_serial ${catkin_LIBRARIES})
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
+install(PROGRAMS
+  src/controller_proxy.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
