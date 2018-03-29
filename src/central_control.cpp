@@ -3,6 +3,7 @@
 #include <rover1/controller.h>
 #include <rover1/input_arm.h>
 #include <rover1/input_drive.h>
+#include <rover1/drive_cmd.h>
 #include <iostream>
 #include <math.h>
 
@@ -15,11 +16,17 @@ class Central_Control {
 
  private:
     ros::NodeHandle nh_;
+
     ros::Subscriber usercmd_sub;
+    ros::Subscriber user_drive_sub;
+    ros::Subscriber user_arm_sub;
+
     ros::Publisher drive_pub;
     ros::Publisher arm_pub;
 
     void cmdCallback(const rover1::controller::ConstPtr& msg);
+    void userDriveCallback(const rover1::input_drive::ConstPtr& msg);
+    void userArmCallback(const rover1::input_arm::ConstPtr& msg);
 };
 
 
@@ -35,7 +42,8 @@ Central_Control::Central_Control() {
   // Subscribers for user input from server controller
   user_drive_sub = nh_.subscribe("/user_drive_commands", 10,
       &Central_Control::userDriveCallback, this);
-  user_arm_sub = nh_.userArmsubscribe("/user_arm_commands", 10,
+
+  user_arm_sub = nh_.subscribe("/user_arm_commands", 10,
       &Central_Control::cmdCallback, this);
 }
 
