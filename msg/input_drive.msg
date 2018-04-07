@@ -1,2 +1,2 @@
-float32 netAngle
-float32 netSpeed
+float32 left
+float32 right

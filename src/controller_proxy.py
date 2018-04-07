@@ -22,10 +22,10 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
         if json_msg["type"] == "drive":
             # do the thing
             msg = input_drive
-            msg.netAngle = json_msg["netAngle"]
-            msg.netSpeed = json_msg["netSpeed"]
-            rospy.loginfo("Drive: NetAngle = [%lf]", msg.netAngle)
-            rospy.loginfo("Drive: NetSpeed = [%lf]", msg.netSpeed)
+            msg.left = json_msg["left"]
+            msg.right = json_msg["right"]
+            rospy.loginfo("Drive: left = [%lf]", msg.left)
+            rospy.loginfo("Drive: right = [%lf]", msg.right)
             self.drive_publisher.publish(msg)
         elif msg["type"] == "arm":
             # do the thing
