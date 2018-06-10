@@ -52,8 +52,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  controller.msg
-  drive_cmd.msg
   input_arm.msg
   input_drive.msg
 )
@@ -127,7 +125,6 @@ include_directories(
 )
 
 add_executable(central_control src/central_control.cpp)
-add_executable(user_input src/user_input.cpp)
 add_executable(drive_serial src/drive_serial.cpp)
 add_executable(arm_serial src/arm_serial.cpp)
 
@@ -163,7 +160,6 @@ add_executable(arm_serial src/arm_serial.cpp)
 
 
 target_link_libraries(central_control ${catkin_LIBRARIES})
-target_link_libraries(user_input ${catkin_LIBRARIES})
 target_link_libraries(drive_serial ${catkin_LIBRARIES})
 target_link_libraries(arm_serial ${catkin_LIBRARIES})
 

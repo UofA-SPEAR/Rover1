@@ -1,9 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/Int32.h"
-#include <rover1/controller.h>
 #include <rover1/input_arm.h>
 #include <rover1/input_drive.h>
-#include <rover1/drive_cmd.h>
 #include <iostream>
 #include <math.h>
 
@@ -17,14 +15,12 @@ class Central_Control {
  private:
     ros::NodeHandle nh_;
 
-    ros::Subscriber usercmd_sub;
     ros::Subscriber user_drive_sub;
     ros::Subscriber user_arm_sub;
 
     ros::Publisher drive_pub;
     ros::Publisher arm_pub;
 
-    void cmdCallback(const rover1::controller::ConstPtr& msg);
     void userDriveCallback(const rover1::input_drive::ConstPtr& msg);
     void userArmCallback(const rover1::input_arm::ConstPtr& msg);
 };
@@ -32,37 +28,24 @@ class Central_Control {
 
 Central_Control::Central_Control() {
   // Initialize publisher
-  drive_pub = nh_.advertise<rover1::controller>("/drive_topic", 10);
-  arm_pub = nh_.advertise<rover1::controller>("/arm_topic", 10);
+  drive_pub = nh_.advertise<rover1::input_drive>("/drive_topic", 10);
+  arm_pub = nh_.advertise<rover1::input_arm>("/arm_topic", 10);
 
-  // Intialize subscriber
-  usercmd_sub = nh_.subscribe("/user_commands", 10,
-      &Central_Control::cmdCallback, this);
 
   // Subscribers for user input from server controller
   user_drive_sub = nh_.subscribe("/user_drive_commands", 10,
       &Central_Control::userDriveCallback, this);
 
   user_arm_sub = nh_.subscribe("/user_arm_commands", 10,
-      &Central_Control::cmdCallback, this);
-}
-
-// Command Callback
-void Central_Control::cmdCallback(const rover1::controller::ConstPtr& msg) {
-  // Send the msg to the drive system or arm based on the current state
-  if (msg->state) {
-    arm_pub.publish(msg);
-  } else {
-    drive_pub.publish(msg);
-  }
+      &Central_Control::userArmCallback, this);
 }
 
 void Central_Control::userDriveCallback(const rover1::input_drive::ConstPtr& msg) {
-  // TODO handle msg
+    drive_pub.publish(msg);
 }
 
 void Central_Control::userArmCallback(const rover1::input_arm::ConstPtr& msg) {
-  // TODO handle msg
+    arm_pub.publish(msg);
 }
 
 

@@ -1,6 +1,6 @@
 #include <dirent.h>
 #include <iostream>
-#include <rover1/controller.h>
+#include <rover1/input_drive.h>
 #include <string>
 #include <sstream>
 #include "ros/ros.h"
@@ -21,7 +21,7 @@ class Drive_Serial {
     ros::Subscriber control_cmd_sub;
     serial::Serial my_serial;
 
-    void centralControlCallback(const rover1::controller::ConstPtr& msg);
+    void centralControlCallback(const rover1::input_drive::ConstPtr& msg);
 };
 
 
@@ -48,17 +48,17 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
 
 // Callback
 void Drive_Serial::centralControlCallback(
-    const rover1::controller::ConstPtr& msg) {
+    const rover1::input_drive::ConstPtr& msg) {
   size_t bytes_read;
   size_t bytes_sent;
   std::string buf;
   std::stringstream stream;
 
-  ROS_INFO("[DRIVE] Left Stick  [%f]", msg->left_stick);
-  ROS_INFO("[DRIVE] Right Stick  [%f]", msg->right_stick);
+  ROS_INFO("[DRIVE] Left Stick  [%f]", msg->left);
+  ROS_INFO("[DRIVE] Right Stick  [%f]", msg->right);
 
-  stream << std::fixed << std::setprecision(5) << msg->left_stick
-    << " " << msg->right_stick << std::endl;
+  stream << std::fixed << std::setprecision(5) << msg->left
+    << " " << msg->right << std::endl;
   const std::string str = stream.str();
 
   ROS_INFO("[DRIVE] Sending [%s]", str.c_str());
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
   if (arduino_port.empty()) {
     ROS_ERROR("NO ARDUINO CONNECTED. PLEASE RESTART THE PROGRAM "
       "WITH ARDUINO CONNECTED TO THE USB HUB");
-    exit(EXIT_FAILURE);
+    //exit(EXIT_FAILURE);
   }
 
   // Initialize the Serial Node object
