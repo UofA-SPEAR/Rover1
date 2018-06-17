@@ -54,6 +54,7 @@ add_message_files(
   FILES
   input_arm.msg
   input_drive.msg
+  output_sensors.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -126,6 +127,7 @@ include_directories(
 
 add_executable(central_control src/central_control.cpp)
 add_executable(drive_serial src/drive_serial.cpp)
+add_executable(sensor_node src/sensor_node.cpp)
 add_executable(arm_serial src/arm_serial.cpp)
 
 ## Declare a C++ library
@@ -161,6 +163,7 @@ add_executable(arm_serial src/arm_serial.cpp)
 
 target_link_libraries(central_control ${catkin_LIBRARIES})
 target_link_libraries(drive_serial ${catkin_LIBRARIES})
+target_link_libraries(sensor_node ${catkin_LIBRARIES})
 target_link_libraries(arm_serial ${catkin_LIBRARIES})
 
 #############

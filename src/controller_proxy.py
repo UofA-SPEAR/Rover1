@@ -8,6 +8,7 @@ import tornado.web
 
 from rover1.msg import input_arm
 from rover1.msg import input_drive
+from rover1.msg import output_sensors
 
 
 class ControllerHandler(tornado.websocket.WebSocketHandler):
@@ -48,9 +49,16 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
 
+def writeSensors(data):
+    # TODO: send to base
+    rospy.loginfo(str(data))
+    
+
 def ros_init():
     global arm_publisher
     global drive_publisher
+    global sensor_subscriber
+
     rospy.init_node('controller_proxy', log_level=rospy.INFO)
     rospy.loginfo("Initializing input node")
     rate = rospy.Rate(2)
@@ -60,16 +68,17 @@ def ros_init():
     arm_publisher = rospy.Publisher('/user_arm_commands', input_arm, queue_size=10)
     drive_publisher = rospy.Publisher('/user_drive_commands', input_drive, queue_size=10)
 
+    sensor_subscriber = rospy.Subscriber('/sensor_out', output_sensors, writeSensors)
+
+    rospy.spin()
+
+
 if __name__ == "__main__":
-    ros_init()
     application = tornado.web.Application([
         ("/websocket", ControllerHandler)
     ])
+    ros_init()
     application.listen(9090)
-    try:
-        tornado.ioloop.IOLoop.current().start()
-    except KeyboardInterrupt:
-        tornado.ioloop.IOLoop.current().stop()
 
     # while not rospy.is_shutdown():
     #     rate.sleep()
