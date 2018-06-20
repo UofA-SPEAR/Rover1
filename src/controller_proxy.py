@@ -5,18 +5,24 @@ import json
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
+import threading
 
 from rover1.msg import input_arm
 from rover1.msg import input_drive
 from rover1.msg import output_sensors
 
+clients = []
 
 class ControllerHandler(tornado.websocket.WebSocketHandler):
     def on_close(self):
         print("Disconnecting")
+        clients.remove(self)
 
     def open(self):
         print("Connecting")
+        global clients
+        clients.append(self)
+
 
     def on_message(self, data):
         global arm_publisher
@@ -52,6 +58,12 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
 def writeSensors(data):
     # TODO: send to base
     rospy.loginfo(str(data))
+    for c in clients:
+        c.write_message(json.dumps(
+            {"type": "science",
+                "gps":{"lon":data.longtitude, "lat":data.latitude}
+                }
+            ))
     
 
 def ros_init():
@@ -70,15 +82,23 @@ def ros_init():
 
     sensor_subscriber = rospy.Subscriber('/sensor_out', output_sensors, writeSensors)
 
-    rospy.spin()
 
+class SpinThread(threading.Thread):
+    def __init__(self):
+        super(SpinThread, self).__init__()
+
+    def run(self):
+        rospy.spin()
 
 if __name__ == "__main__":
     application = tornado.web.Application([
         ("/websocket", ControllerHandler)
     ])
-    ros_init()
     application.listen(9090)
+
+    ros_init()
+    SpinThread().start()
+    tornado.ioloop.IOLoop.current().start()
 
     # while not rospy.is_shutdown():
     #     rate.sleep()
