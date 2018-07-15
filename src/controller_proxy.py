@@ -36,13 +36,16 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             msg.base = json_msg["base"]
             msg.shoulder = json_msg["shoulder"]
             msg.elbow = json_msg["elbow"]
-            msg.wrist = json_msg["wrist"]
+            # we need to update the control panel to send messages for wrist pitch - Ryan
+            msg.wrist_pitch = json["wrist_pitch"]
+            msg.wrist_roll = json_msg["wrist"]
             msg.fingers = json_msg["fingers"]
             rospy.loginfo("Arm: Base = [%lf]", msg.base)
             rospy.loginfo("Arm: Shoulder = [%lf]", msg.shoulder)
             rospy.loginfo("Arm: Elbow = [%lf]", msg.elbow)
+            rospy.loginfo("Arm: Wrist Pitch = [%lf]", msg.wrist_pitch)
+            rospy.loginfo("Arm: Wrist Roll = [%lf]", msg.wrist_roll)
             rospy.loginfo("Arm: Fingers = [%lf]", msg.fingers)
-            rospy.loginfo("Arm: Wrist = [%lf]", msg.wrist)
             arm_publisher.publish(msg)
 
     def check_origin(self, origin):
