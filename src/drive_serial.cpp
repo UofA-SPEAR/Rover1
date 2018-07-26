@@ -1,12 +1,17 @@
 #include <dirent.h>
 #include <iostream>
-#include <rover1/input_drive.h>
 #include <string>
+#include <algorithm>
+#include <cmath>
 #include <sstream>
+#include <unistd.h>
+
 #include "ros/ros.h"
+#include <rover1/input_drive.h>
 #include "serial/serial.h"
 #include "std_msgs/Int32.h"
-#include <unistd.h>
+
+const float maxDiff = 0.05;
 
 class Drive_Serial {
  public:
@@ -16,6 +21,9 @@ class Drive_Serial {
     int mtude_, dir_;
     const std::string port_;
     uint32_t baud_;
+
+    float left;
+    float right;
 
     ros::NodeHandle nh_;
     ros::Subscriber control_cmd_sub;
@@ -43,8 +51,13 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
   // Initialize the control_cmd_sub
   control_cmd_sub = nh_.subscribe("/drive_topic", 10,
       &Drive_Serial::centralControlCallback, this);
+  left = 0;
+  right = 0;
 }
 
+template <typename T> int sign(T val){
+    return (T(0) < val) - (val < T(0));
+}
 
 // Callback
 void Drive_Serial::centralControlCallback(
@@ -54,11 +67,24 @@ void Drive_Serial::centralControlCallback(
   std::string buf;
   std::stringstream stream;
 
-  ROS_INFO("[DRIVE] Left Stick  [%f]", msg->left);
-  ROS_INFO("[DRIVE] Right Stick  [%f]", msg->right);
 
-  stream << std::fixed << std::setprecision(5) << msg->left
-    << " " << msg->right << std::endl;
+  ROS_INFO("[DRIVE] Processing message");
+  if(msg->left == 0 && msg->right == 0){
+      left = 0;
+      right = 0;
+  }else{
+      left += std::min(std::abs(msg->left - left), maxDiff) 
+          * sign(msg->left-left);
+      right += std::min(std::abs(msg->right - right), maxDiff) 
+          * sign(msg->right-right);
+  }
+
+
+  ROS_INFO("[DRIVE] Left Stick  [%f]", left);
+  ROS_INFO("[DRIVE] Right Stick  [%f]", right);
+
+  stream << std::fixed << std::setprecision(5) << -left
+    << " " << -right << std::endl;
   const std::string str = stream.str();
 
   ROS_INFO("[DRIVE] Sending [%s]", str.c_str());

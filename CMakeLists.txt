@@ -130,6 +130,7 @@ add_executable(drive_serial src/drive_serial.cpp)
 add_executable(sensor_node src/sensor_node.cpp)
 add_executable(arm_serial src/arm_serial.cpp)
 
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/rover1.cpp
@@ -165,6 +166,15 @@ target_link_libraries(central_control ${catkin_LIBRARIES})
 target_link_libraries(drive_serial ${catkin_LIBRARIES})
 target_link_libraries(sensor_node ${catkin_LIBRARIES})
 target_link_libraries(arm_serial ${catkin_LIBRARIES})
+
+
+# IMPORTANT
+# this ensures that the messages files are generated 
+# before the code is compiled
+add_dependencies(central_control rover1_generate_messages_cpp)
+add_dependencies(drive_serial rover1_generate_messages_cpp)
+add_dependencies(sensor_node rover1_generate_messages_cpp)
+add_dependencies(arm_serial rover1_generate_messages_cpp)
 
 #############
 ## Install ##

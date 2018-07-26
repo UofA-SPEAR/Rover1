@@ -1,11 +1,12 @@
 #include <dirent.h>
 #include <iostream>
-#include <rover1/input_arm.h>
 #include <string>
 #include <sstream>
 #include <unistd.h>
 #include <cmath>
+
 #include "ros/ros.h"
+#include <rover1/input_arm.h>
 #include "serial/serial.h"
 
 /*
@@ -61,7 +62,7 @@ void Arm_Serial::centralControlCallback(
   bytes[6] = (uint32_t)(msg->fingers * M_1_PI / 2 * UINT32_MAX);
   bytes[7] = 3; // signal end of transmission
 
-  ROS_INFO("[ARM] {base, shoulder, elbow, wrist_pitch, wrist_roll, fingers} = {%d, %d, %d, %d, %d}", bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6]);
+  ROS_INFO("[ARM] {base, shoulder, elbow, wrist_pitch, wrist_roll, fingers} = {%d, %d, %d, %d, %d, %d}", bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6]);
 
   bytes_sent = my_serial.write((uint8_t*) bytes, 28);
 
