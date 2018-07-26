@@ -5,17 +5,24 @@ import json
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
+import threading
 
 from rover1.msg import input_arm
 from rover1.msg import input_drive
+from rover1.msg import output_sensors
 
+clients = []
 
 class ControllerHandler(tornado.websocket.WebSocketHandler):
     def on_close(self):
         print("Disconnecting")
+        clients.remove(self)
 
     def open(self):
         print("Connecting")
+        global clients
+        clients.append(self)
+
 
     def on_message(self, data):
         global arm_publisher
@@ -51,9 +58,22 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
 
+def writeSensors(data):
+    # TODO: send to base
+    rospy.loginfo(str(data))
+    for c in clients:
+        c.write_message(json.dumps(
+            {"type": "science",
+                "gps":{"lon":data.longtitude, "lat":data.latitude}
+                }
+            ))
+    
+
 def ros_init():
     global arm_publisher
     global drive_publisher
+    global sensor_subscriber
+
     rospy.init_node('controller_proxy', log_level=rospy.INFO)
     rospy.loginfo("Initializing input node")
     rate = rospy.Rate(2)
@@ -63,16 +83,25 @@ def ros_init():
     arm_publisher = rospy.Publisher('/user_arm_commands', input_arm, queue_size=10)
     drive_publisher = rospy.Publisher('/user_drive_commands', input_drive, queue_size=10)
 
+    sensor_subscriber = rospy.Subscriber('/sensor_out', output_sensors, writeSensors)
+
+
+class SpinThread(threading.Thread):
+    def __init__(self):
+        super(SpinThread, self).__init__()
+
+    def run(self):
+        rospy.spin()
+
 if __name__ == "__main__":
-    ros_init()
     application = tornado.web.Application([
         ("/websocket", ControllerHandler)
     ])
     application.listen(9090)
-    try:
-        tornado.ioloop.IOLoop.current().start()
-    except KeyboardInterrupt:
-        tornado.ioloop.IOLoop.current().stop()
+
+    ros_init()
+    SpinThread().start()
+    tornado.ioloop.IOLoop.current().start()
 
     # while not rospy.is_shutdown():
     #     rate.sleep()
