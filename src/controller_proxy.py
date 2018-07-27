@@ -6,6 +6,7 @@ import tornado.websocket
 import tornado.ioloop
 import tornado.web
 import threading
+import time
 
 from rover1.msg import input_arm
 from rover1.msg import input_drive
@@ -28,7 +29,7 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
         global arm_publisher
         global drive_publisher
         json_msg = json.loads(data)
-        print(json_msg)
+        #print(json_msg)
         if json_msg["type"] == "drive":
             # do the thing
             msg = input_drive()
@@ -60,11 +61,14 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
 
 def writeSensors(data):
     # TODO: send to base
-    rospy.loginfo(str(data))
+    #rospy.loginfo(str(data))
     for c in clients:
         c.write_message(json.dumps(
             {"type": "science",
-                "gps":{"lon":data.longtitude, "lat":data.latitude}
+                "gps":{"lon":data.longtitude, "lat":data.latitude},
+                "uv": data.uv,
+                "temperature": data.temperature,
+                "humidity": data.humidity,
                 }
             ))
     
@@ -76,9 +80,7 @@ def ros_init():
 
     rospy.init_node('controller_proxy', log_level=rospy.INFO)
     rospy.loginfo("Initializing input node")
-    rate = rospy.Rate(2)
-    if rospy.is_shutdown():
-        tornado.ioloop.IOLoop.current().stop()
+
     # Init publishers
     arm_publisher = rospy.Publisher('/user_arm_commands', input_arm, queue_size=10)
     drive_publisher = rospy.Publisher('/user_drive_commands', input_drive, queue_size=10)
@@ -93,15 +95,31 @@ class SpinThread(threading.Thread):
     def run(self):
         rospy.spin()
 
+class WebThread(threading.Thread):
+    def __init__(self):
+        super(WebThread, self).__init__()
+
+    def run(self):
+        application = tornado.web.Application([
+            ("/websocket", ControllerHandler)
+        ])
+        application.listen(9090)
+        tornado.ioloop.IOLoop.current().start()
+
+
+t_ros = SpinThread()
+t_web = WebThread()
 if __name__ == "__main__":
-    application = tornado.web.Application([
-        ("/websocket", ControllerHandler)
-    ])
-    application.listen(9090)
-
     ros_init()
-    SpinThread().start()
-    tornado.ioloop.IOLoop.current().start()
 
-    # while not rospy.is_shutdown():
-    #     rate.sleep()
+    t_ros.daemon = True
+    t_ros.start()
+
+    t_web.daemon = True
+    t_web.start()
+
+    while not rospy.is_shutdown():
+        time.sleep(1) # keep everything alive until this loop exits, 
+        # but also, busy looping is bad. So one second sleep
+
+
