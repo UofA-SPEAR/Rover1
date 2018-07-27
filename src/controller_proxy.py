@@ -46,7 +46,7 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             msg.elbow = json_msg["elbow"]
             # we need to update the control panel to send messages for wrist pitch - Ryan
             msg.wrist_pitch = json["wrist_pitch"]
-            msg.wrist_roll = json_msg["wrist"]
+            msg.wrist_roll = json_msg["wrist_roll"]
             msg.fingers = json_msg["fingers"]
             rospy.loginfo("Arm: Base = [%lf]", msg.base)
             rospy.loginfo("Arm: Shoulder = [%lf]", msg.shoulder)
