@@ -9,10 +9,6 @@
 #include <rover1/input_arm.h>
 #include "serial/serial.h"
 
-/*
- * TODO: STILL CURRENTLY USING THE DRIVE DEFINED MSG, NEED TO DEFINE
- * A NEW MSG TYPE FOR THE ARM
- */
 
 
 class Arm_Serial {
@@ -39,7 +35,7 @@ Arm_Serial::Arm_Serial(std::string port_num, uint32_t baud_num):
   baud_(baud_num),
   my_serial(port_, baud_, serial::Timeout::simpleTimeout(1000)) {
   // Initialize the control_cmd_sub
-  arm_cmd_sub = nh_.subscribe("/arm_topic", 10,
+  arm_cmd_sub = nh_.subscribe("/user_arm_commands", 10,
       &Arm_Serial::centralControlCallback, this);
 }
 
@@ -48,23 +44,19 @@ Arm_Serial::Arm_Serial(std::string port_num, uint32_t baud_num):
 void Arm_Serial::centralControlCallback(
     const rover1::input_arm::ConstPtr& msg) {
 
-  // TODO(jordan): change specific message sent to arm
-
   size_t bytes_sent;
 
-  uint32_t bytes[8];
-  bytes[0] = 2; // signal start of transmission
-  bytes[1] = (uint32_t)(msg->base * M_1_PI / 2 * UINT32_MAX);
-  bytes[2] = (uint32_t)(msg->shoulder * M_1_PI / 2 * UINT32_MAX);
-  bytes[3] = (uint32_t)(msg->elbow * M_1_PI / 2 * UINT32_MAX);
-  bytes[4] = (uint32_t)(msg->wrist_pitch * M_1_PI / 2 * UINT32_MAX);  
-  bytes[5] = (uint32_t)(msg->wrist_roll * M_1_PI / 2 * UINT32_MAX);
-  bytes[6] = (uint32_t)(msg->fingers * M_1_PI / 2 * UINT32_MAX);
-  bytes[7] = 3; // signal end of transmission
+  uint32_t bytes[6];
+  bytes[0] = (uint32_t)(msg->base * M_1_PI / 2 * UINT32_MAX);
+  bytes[1] = (uint32_t)(msg->shoulder * M_1_PI / 2 * UINT32_MAX);
+  bytes[2] = (uint32_t)(msg->elbow * M_1_PI / 2 * UINT32_MAX);
+  bytes[3] = (uint32_t)(msg->wrist_pitch * M_1_PI / 2 * UINT32_MAX);  
+  bytes[4] = (uint32_t)(msg->wrist_roll * M_1_PI / 2 * UINT32_MAX);
+  bytes[5] = (uint32_t)(msg->fingers * M_1_PI / 2 * UINT32_MAX);
 
-  ROS_INFO("[ARM] {base, shoulder, elbow, wrist_pitch, wrist_roll, fingers} = {%d, %d, %d, %d, %d, %d}", bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6]);
+  ROS_INFO("[ARM] {base, shoulder, elbow, wrist_pitch, wrist_roll, fingers} = {%d, %d, %d, %d, %d, %d}", bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
 
-  bytes_sent = my_serial.write((uint8_t*) bytes, 28);
+  bytes_sent = my_serial.write((uint8_t*) bytes, 24);
 
 }
 

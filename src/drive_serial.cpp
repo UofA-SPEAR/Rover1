@@ -68,7 +68,6 @@ void Drive_Serial::centralControlCallback(
   std::stringstream stream;
 
 
-  ROS_INFO("[DRIVE] Processing message");
   if(msg->left == 0 && msg->right == 0){
       left = 0;
       right = 0;
@@ -80,8 +79,6 @@ void Drive_Serial::centralControlCallback(
   }
 
 
-  ROS_INFO("[DRIVE] Left Stick  [%f]", left);
-  ROS_INFO("[DRIVE] Right Stick  [%f]", right);
 
   stream << std::fixed << std::setprecision(5) << -left
     << " " << -right << std::endl;
@@ -93,7 +90,7 @@ void Drive_Serial::centralControlCallback(
   buf = this->my_serial.readline();
 
   /* ROS_INFO("[DRIVE] Bytes Sent [%zu]", bytes_sent); */
-  ROS_INFO("[DRIVE] Read %s [%zu bytes]", buf.c_str(), buf.length());
+  // ROS_INFO("[DRIVE] Read %s [%zu bytes]", buf.c_str(), buf.length());
 }
 
 
