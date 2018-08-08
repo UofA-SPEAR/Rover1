@@ -68,17 +68,9 @@ int main(int argc, char **argv) {
   std::string arduino_port;
   uint32_t def_baud = 9600;
 
-  // TODO(jordan): Probs need to change this if we have two arduinos connected
-
-  // Check if the arduino is connected to ttyUSB0
-  DIR* dir = opendir("/dev/ttyUSB0");
+  DIR* dir = opendir("/dev/serial_arm");
   if (ENOENT != errno) {
-    arduino_port = "/dev/ttyUSB0";
-  }
-
-  dir = opendir("/dev/ttyACM0");
-  if (ENOENT != errno) {
-    arduino_port = "/dev/ttyACM0";
+    arduino_port = "/dev/serial_arm";
   }
 
   if (arduino_port.empty()) {
