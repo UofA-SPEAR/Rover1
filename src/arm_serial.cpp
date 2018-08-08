@@ -37,6 +37,10 @@ Arm_Serial::Arm_Serial(std::string port_num, uint32_t baud_num):
   // Initialize the control_cmd_sub
   arm_cmd_sub = nh_.subscribe("/user_arm_commands", 10,
       &Arm_Serial::centralControlCallback, this);
+
+  ROS_INFO("Port = %s", port_num.c_str());
+  ROS_INFO("Baud = %d", baud_num);
+  ROS_INFO("Port Open? [%s]", my_serial.isOpen() ? "Yes" : "No");
 }
 
 

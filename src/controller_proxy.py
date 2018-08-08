@@ -35,6 +35,7 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             msg = input_drive()
             msg.left = json_msg["left"]
             msg.right = json_msg["right"]
+            msg.wheelie = json_msg["wheelie"]
             #rospy.loginfo("Drive: left = [%lf]", msg.left)
             #rospy.loginfo("Drive: right = [%lf]", msg.right)
             drive_publisher.publish(msg)

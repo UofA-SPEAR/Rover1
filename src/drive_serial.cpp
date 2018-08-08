@@ -21,14 +21,13 @@ class Drive_Serial {
     const std::string port_;
     uint32_t baud_;
 
-    int8_t left;
-    int8_t right;
 
     ros::NodeHandle nh_;
     ros::Subscriber control_cmd_sub;
     serial::Serial my_serial;
 
     void centralControlCallback(const rover1::input_drive::ConstPtr& msg);
+    void command(char cmd, int8_t val);
 };
 
 
@@ -50,53 +49,39 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
   // Initialize the control_cmd_sub
   control_cmd_sub = nh_.subscribe("/drive_topic", 10,
       &Drive_Serial::centralControlCallback, this);
-  left = 0;
-  right = 0;
 }
 
 template <typename T> int sign(T val){
     return (T(0) < val) - (val < T(0));
 }
 
+const float wheelie_coeffecient = -0.05f;
 // Callback
 void Drive_Serial::centralControlCallback(
     const rover1::input_drive::ConstPtr& msg) {
-  size_t bytes_sent;
-  int8_t msgleft = msg->left * 127;
-  int8_t msgright = msg->right * 127;
 
-  if(msg->left == 0 && msg->right == 0){
-      left = 0;
-      right = 0;
+  int8_t left = 127 * msg->left;
+  int8_t right = 127 * msg->right;
+  ROS_INFO("[DRIVE] Sending {L:[%d] R:[%d] W: [%f]}", left, right, msg->wheelie);
+
+
+  if(msg->wheelie){
+      command('Q', left);
+      command('W', right);
+      command('A', msg->wheelie * right);
+      command('S', msg->wheelie * left);
   }else{
-      left += sign(msgleft - left);
-      right += sign(msgright - right);
+      command('R', right);
+      command('L', left);
   }
 
-
-  ROS_INFO("[DRIVE] Sending {L:[%d] R:[%d]}", left, right);
-
-  uint8_t L[1] = {'L'};
-  uint8_t l[1] = {((uint8_t) left)};
-  uint8_t R[1] = {'R'};
-  uint8_t r[1] = {((uint8_t) right)};
-  bytes_sent = this->my_serial.write(L, 1);
-  this->my_serial.flush();
-  bytes_sent = this->my_serial.write(l, 1);
-  this->my_serial.flush();
-  bytes_sent = this->my_serial.write(R, 1);
-  this->my_serial.flush();
-  bytes_sent = this->my_serial.write(r, 1);
-  this->my_serial.flush();
-
-  /*
-  bytes_sent = this->my_serial.write('L');
-  bytes_sent = this->my_serial.write(left);
-  bytes_sent = this->my_serial.write('R');
-  bytes_sent = this->my_serial.write(right);
-  */
 }
 
+void Drive_Serial::command(char cmd, int8_t val){
+  const uint8_t byte[2] = {(uint8_t)cmd, (uint8_t)val};
+  this->my_serial.write(byte, 2);
+  this->my_serial.flush();
+}
 
 int main(int argc, char **argv) {
   // Initializing ROS node with a name of demo_topic_subscriber
