@@ -11,7 +11,6 @@
 #include "serial/serial.h"
 #include "std_msgs/Int32.h"
 
-const float maxDiff = 0.05;
 
 class Drive_Serial {
  public:
@@ -22,14 +21,13 @@ class Drive_Serial {
     const std::string port_;
     uint32_t baud_;
 
-    float left;
-    float right;
 
     ros::NodeHandle nh_;
     ros::Subscriber control_cmd_sub;
     serial::Serial my_serial;
 
     void centralControlCallback(const rover1::input_drive::ConstPtr& msg);
+    void command(char cmd, int8_t val);
 };
 
 
@@ -51,86 +49,61 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
   // Initialize the control_cmd_sub
   control_cmd_sub = nh_.subscribe("/drive_topic", 10,
       &Drive_Serial::centralControlCallback, this);
-  left = 0;
-  right = 0;
 }
 
 template <typename T> int sign(T val){
     return (T(0) < val) - (val < T(0));
 }
 
+const float wheelie_coeffecient = -0.05f;
 // Callback
 void Drive_Serial::centralControlCallback(
     const rover1::input_drive::ConstPtr& msg) {
-  size_t bytes_read;
-  size_t bytes_sent;
-  std::string buf;
-  std::stringstream stream;
+
+  int8_t left = 127 * msg->left;
+  int8_t right = 127 * msg->right;
+  ROS_INFO("[DRIVE] Sending {L:[%d] R:[%d] W: [%f]}", left, right, msg->wheelie);
 
 
-  ROS_INFO("[DRIVE] Processing message");
-  if(msg->left == 0 && msg->right == 0){
-      left = 0;
-      right = 0;
+  if(msg->wheelie){
+      command('Q', left);
+      command('W', right);
+      command('A', msg->wheelie * right);
+      command('S', msg->wheelie * left);
   }else{
-      left += std::min(std::abs(msg->left - left), maxDiff) 
-          * sign(msg->left-left);
-      right += std::min(std::abs(msg->right - right), maxDiff) 
-          * sign(msg->right-right);
+      command('R', right);
+      command('L', left);
   }
 
-
-  ROS_INFO("[DRIVE] Left Stick  [%f]", left);
-  ROS_INFO("[DRIVE] Right Stick  [%f]", right);
-
-  stream << std::fixed << std::setprecision(5) << -left
-    << " " << -right << std::endl;
-  const std::string str = stream.str();
-
-  ROS_INFO("[DRIVE] Sending [%s]", str.c_str());
-
-  bytes_sent = this->my_serial.write(str);
-  buf = this->my_serial.readline();
-
-  /* ROS_INFO("[DRIVE] Bytes Sent [%zu]", bytes_sent); */
-  ROS_INFO("[DRIVE] Read %s [%zu bytes]", buf.c_str(), buf.length());
 }
 
+void Drive_Serial::command(char cmd, int8_t val){
+  const uint8_t byte[2] = {(uint8_t)cmd, (uint8_t)val};
+  this->my_serial.write(byte, 2);
+  this->my_serial.flush();
+}
 
 int main(int argc, char **argv) {
   // Initializing ROS node with a name of demo_topic_subscriber
   ros::init(argc, argv, "drive_serial");
 
-  // TODO(jordan/mark) restructure the code for two arduinos
 
   std::string arduino_port;
   uint32_t def_baud = 9600;
 
-  // Check if the arduino is connected to ttyUSB0
-  DIR* dir = opendir("/dev/ttyUSB0");
+  DIR* dir = opendir("/dev/serial_drive");
   if (ENOENT != errno) {
-     arduino_port = "/dev/ttyUSB0";
-  }
-
-  // Check if the arduino is connected to ttyACM0
-  dir = opendir("/dev/ttyACM0");
-  if (ENOENT != errno) {
-     arduino_port = "/dev/ttyACM0";
+     arduino_port = "/dev/serial_drive";
   }
 
   if (arduino_port.empty()) {
     ROS_ERROR("NO ARDUINO CONNECTED. PLEASE RESTART THE PROGRAM "
       "WITH ARDUINO CONNECTED TO THE USB HUB");
-    //exit(EXIT_FAILURE);
   }
 
   // Initialize the Serial Node object
   Drive_Serial serial_node(arduino_port, def_baud);
 
-  // TODO(mark/jordan): Restructure code to while loop and ros:spinOnce()
-  // Therefore, we can constantly send msgs to the arduino
-  // (instead of only sending msgs when the callback is called)
-  
   ros::spin();
   return 0;
 }

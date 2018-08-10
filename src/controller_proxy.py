@@ -35,8 +35,9 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             msg = input_drive()
             msg.left = json_msg["left"]
             msg.right = json_msg["right"]
-            rospy.loginfo("Drive: left = [%lf]", msg.left)
-            rospy.loginfo("Drive: right = [%lf]", msg.right)
+            msg.wheelie = json_msg["wheelie"]
+            #rospy.loginfo("Drive: left = [%lf]", msg.left)
+            #rospy.loginfo("Drive: right = [%lf]", msg.right)
             drive_publisher.publish(msg)
         elif json_msg["type"] == "arm":
             # do the thing
@@ -44,16 +45,16 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             msg.base = json_msg["base"]
             msg.shoulder = json_msg["shoulder"]
             msg.elbow = json_msg["elbow"]
-            # we need to update the control panel to send messages for wrist pitch - Ryan
-            msg.wrist_pitch = json["wrist_pitch"]
+            msg.wrist_pitch = json_msg["wrist_pitch"]
             msg.wrist_roll = json_msg["wrist_roll"]
             msg.fingers = json_msg["fingers"]
-            rospy.loginfo("Arm: Base = [%lf]", msg.base)
-            rospy.loginfo("Arm: Shoulder = [%lf]", msg.shoulder)
-            rospy.loginfo("Arm: Elbow = [%lf]", msg.elbow)
-            rospy.loginfo("Arm: Wrist Pitch = [%lf]", msg.wrist_pitch)
-            rospy.loginfo("Arm: Wrist Roll = [%lf]", msg.wrist_roll)
-            rospy.loginfo("Arm: Fingers = [%lf]", msg.fingers)
+
+            #rospy.loginfo("Arm: Base = [%lf]", msg.base)
+            #rospy.loginfo("Arm: Shoulder = [%lf]", msg.shoulder)
+            #rospy.loginfo("Arm: Elbow = [%lf]", msg.elbow)
+            #rospy.loginfo("Arm: Wrist Pitch = [%lf]", msg.wrist_pitch)
+            #rospy.loginfo("Arm: Wrist Roll = [%lf]", msg.wrist_roll)
+            #rospy.loginfo("Arm: Fingers = [%lf]", msg.fingers)
             arm_publisher.publish(msg)
 
     def check_origin(self, origin):
@@ -86,6 +87,18 @@ def ros_init():
     drive_publisher = rospy.Publisher('/user_drive_commands', input_drive, queue_size=10)
 
     sensor_subscriber = rospy.Subscriber('/sensor_out', output_sensors, writeSensors)
+
+
+    # do the thing
+    msg = input_arm()
+    msg.base = 0.5
+    msg.shoulder =0.5
+    msg.elbow = 0.5
+    # we need to update the control panel to send messages for wrist pitch - Ryan
+    msg.wrist_pitch = 0.5
+    msg.wrist_roll = 0.5
+    msg.fingers = 0.5
+    arm_publisher.publish(msg)
 
 
 class SpinThread(threading.Thread):
