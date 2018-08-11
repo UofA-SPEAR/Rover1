@@ -78,7 +78,8 @@ void Drive_Serial::centralControlCallback(
 }
 
 void Drive_Serial::command(char cmd, int8_t val){
-  const uint8_t byte[5] = {2, (uint8_t)cmd, (uint8_t)val, (uint8_t) (cmd+val), 3};
+  const uint8_t byte[5] = {2, (uint8_t)cmd, (uint8_t)val, 
+      (uint8_t) (((uint8_t)cmd)+((uint8_t)val)), 3};
   this->my_serial.write(byte, 2);
   this->my_serial.flush();
 }
