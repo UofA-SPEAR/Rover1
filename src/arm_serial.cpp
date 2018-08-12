@@ -15,6 +15,7 @@ class Arm_Serial {
  public:
     Arm_Serial(std::string port_num, uint32_t baud_num);
     void centralControlCallback(const rover1::input_arm::ConstPtr& msg);
+    void sendCommand(char command, uint32_t angle);
 
  private:
     // Place holders until we determine what actual values we want to send to
