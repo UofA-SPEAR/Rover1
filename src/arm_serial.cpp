@@ -58,10 +58,31 @@ void Arm_Serial::centralControlCallback(
   bytes[4] = (uint32_t)(msg->wrist_roll * M_1_PI / 2 * UINT32_MAX);
   bytes[5] = (uint32_t)(msg->fingers * M_1_PI / 2 * UINT32_MAX);
 
+  int64_t total = 0;
+  for(int i = 0; i < 6; i++){
+      total += bytes[i];
+  }
+  
+
   ROS_INFO("[ARM] {base, shoulder, elbow, wrist_pitch, wrist_roll, fingers} = {%d, %d, %d, %d, %d, %d}", bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
 
-  bytes_sent = my_serial.write((uint8_t*) bytes, 24);
+  if(total != 0){
+      for(int i = 0; i < 6; i++){
+          sendCommand(i, bytes[i]);
+      }
+  }else{
+      sendCommand(0, 0); // 0 0 is home
+  }
 
+}
+
+void Arm_Serial::sendCommand(char command, uint32_t angle){
+    uint8_t b1 = angle & 0x000000FF;
+    uint8_t b2 = angle & 0x0000FF00;
+    uint8_t b3 = angle & 0x00FF0000;
+    uint8_t b4 = angle & 0xFF000000;
+    uint8_t bytes[8] = {2, command, b1, b2, b3, b4, (uint8_t)(b1 + b2 + b3 + b4), 3};
+    my_serial.write(bytes, 8);
 }
 
 
