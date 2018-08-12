@@ -9,6 +9,7 @@
 #include <rover1/input_arm.h>
 #include "serial/serial.h"
 
+#define HOME_SIGNAL 254
 
 
 class Arm_Serial {
@@ -72,7 +73,7 @@ void Arm_Serial::centralControlCallback(
           sendCommand(i, bytes[i]);
       }
   }else{
-      sendCommand(0, 0); // 0 0 is home
+      sendCommand(HOME_SIGNAL, 0); 
   }
 
 }
