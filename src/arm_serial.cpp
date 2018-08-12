@@ -66,7 +66,7 @@ void Arm_Serial::centralControlCallback(
   }
   
 
-  ROS_INFO("[ARM] {base, shoulder, elbow, wrist_pitch, wrist_roll, fingers} = {%d, %d, %d, %d, %d, %d}", bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
+  //ROS_INFO("[ARM] {base, shoulder, elbow, wrist_pitch, wrist_roll, fingers} = {%d, %d, %d, %d, %d, %d}", bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
 
   if(total != 0){
       for(int i = 0; i < 6; i++){
@@ -83,6 +83,9 @@ void Arm_Serial::sendCommand(char command, uint32_t angle){
     uint8_t b2 = angle & 0x0000FF00;
     uint8_t b3 = angle & 0x00FF0000;
     uint8_t b4 = angle & 0xFF000000;
+
+    ROS_INFO("[ARM] %d [%d| %d %d %d %d]", command, angle, b1, b2, b3, b4);
+
     uint8_t bytes[8] = {2, command, b1, b2, b3, b4, (uint8_t)(b1 + b2 + b3 + b4), 3};
     my_serial.write(bytes, 8);
 }
