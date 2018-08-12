@@ -80,9 +80,9 @@ void Arm_Serial::centralControlCallback(
 
 void Arm_Serial::sendCommand(char command, uint32_t angle){
     uint8_t b1 = angle & 0x000000FF;
-    uint8_t b2 = angle & 0x0000FF00;
-    uint8_t b3 = angle & 0x00FF0000;
-    uint8_t b4 = angle & 0xFF000000;
+    uint8_t b2 = (angle & 0x0000FF00) >> 8;
+    uint8_t b3 = (angle & 0x00FF0000) >> 16;
+    uint8_t b4 = (angle & 0xFF000000) >> 24;
 
     ROS_INFO("[ARM] %d [%d| %d %d %d %d]", command, angle, b1, b2, b3, b4);
 
