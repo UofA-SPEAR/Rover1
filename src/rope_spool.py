@@ -4,7 +4,6 @@ from rover1.msg import input_rope
 import RPi.GPIO as GPIO
 
 direction_pin  = 13
-motor_direction = 1
 
 GPIO.setmode(GPIO.BOARD)
 rope_subscriber = None
@@ -16,10 +15,6 @@ def initMotor():
     GPIO.setup(direction_pin, GPIO.OUT) # DIR pin
     pwm = GPIO.PWM(12, 100) # Set PWM frequency as 100Hz
 
-
-# Set motor direction, a value of 0 reverses the motor
-def setDirection(direction):
-    motor_direction = direction
 
 
 # Pass values from [-100, 100] as percentage to set motor speed/direction
@@ -41,6 +36,7 @@ def handleRopeCallback(data):
 if __name__ == "__main__ ":
     rospy.init_node('rope_node', log_level=rospy.INFO)
     rospy.loginfo("Initializing rope node")
+    initMotor()
 
     sensor_subscriber = rospy.Subscriber('/rope_sub', input_rope, handleRopeCallback)
 
