@@ -83,8 +83,8 @@ def ros_init():
     rospy.loginfo("Initializing input node")
 
     # Init publishers
-    arm_publisher = rospy.Publisher('/user_arm_commands', input_arm, queue_size=10)
-    drive_publisher = rospy.Publisher('/user_drive_commands', input_drive, queue_size=10)
+    arm_publisher = rospy.Publisher('/user_arm_commands', input_arm, queue_size=50)
+    drive_publisher = rospy.Publisher('/user_drive_commands', input_drive, queue_size=50)
 
     sensor_subscriber = rospy.Subscriber('/sensor_out', output_sensors, writeSensors)
 

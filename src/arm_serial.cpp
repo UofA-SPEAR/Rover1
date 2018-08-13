@@ -37,7 +37,7 @@ Arm_Serial::Arm_Serial(std::string port_num, uint32_t baud_num):
   baud_(baud_num),
   my_serial(port_, baud_, serial::Timeout::simpleTimeout(1000)) {
   // Initialize the control_cmd_sub
-  arm_cmd_sub = nh_.subscribe("/user_arm_commands", 10,
+  arm_cmd_sub = nh_.subscribe("/user_arm_commands", 50,
       &Arm_Serial::centralControlCallback, this);
 
   ROS_INFO("Port = %s", port_num.c_str());
