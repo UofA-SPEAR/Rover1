@@ -10,6 +10,7 @@ import time
 
 from rover1.msg import input_arm
 from rover1.msg import input_drive
+from rover1.msg import input_rope
 from rover1.msg import output_sensors
 
 clients = []
@@ -55,6 +56,9 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             #rospy.loginfo("Arm: Wrist Roll = [%lf]", msg.wrist_roll)
             #rospy.loginfo("Arm: Fingers = [%lf]", msg.fingers)
             arm_publisher.publish(msg)
+        elif json_msg["type"] == "rope":
+            msg = input_rope()
+            rope.speed = json_msg["speed"]
 
     def check_origin(self, origin):
         return True
@@ -84,20 +88,11 @@ def ros_init():
     # Init publishers
     arm_publisher = rospy.Publisher('/user_arm_commands', input_arm, queue_size=50)
     drive_publisher = rospy.Publisher('/user_drive_commands', input_drive, queue_size=50)
+    rope_publisher = rospy.Publisher('/rope_sub', input_rope, queue_size=50)
 
     sensor_subscriber = rospy.Subscriber('/sensor_out', output_sensors, writeSensors)
 
 
-    # do the thing
-    msg = input_arm()
-    msg.base = 0.5
-    msg.shoulder =0.5
-    msg.elbow = 0.5
-    # we need to update the control panel to send messages for wrist pitch - Ryan
-    msg.wrist_pitch = 0.5
-    msg.wrist_roll = 0.5
-    msg.fingers = 0.5
-    arm_publisher.publish(msg)
 
 
 class SpinThread(threading.Thread):

@@ -54,6 +54,7 @@ add_message_files(
   FILES
   input_arm.msg
   input_drive.msg
+  input_rope.msg
   output_sensors.msg
 )
 
