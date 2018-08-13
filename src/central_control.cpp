@@ -29,15 +29,15 @@ class Central_Control {
 
 Central_Control::Central_Control() {
   // Initialize publisher
-  drive_pub = nh_.advertise<rover1::input_drive>("/drive_topic", 10);
-  arm_pub = nh_.advertise<rover1::input_arm>("/arm_topic", 10);
+  drive_pub = nh_.advertise<rover1::input_drive>("/drive_topic", 50);
+  arm_pub = nh_.advertise<rover1::input_arm>("/arm_topic", 50);
 
 
   // Subscribers for user input from server controller
-  user_drive_sub = nh_.subscribe("/user_drive_commands", 10,
+  user_drive_sub = nh_.subscribe("/user_drive_commands", 50,
       &Central_Control::userDriveCallback, this);
 
-  user_arm_sub = nh_.subscribe("/user_arm_commands", 10,
+  user_arm_sub = nh_.subscribe("/user_arm_commands", 50,
       &Central_Control::userArmCallback, this);
 }
 

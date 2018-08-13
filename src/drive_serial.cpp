@@ -47,7 +47,7 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
   ROS_INFO("Port Open? [%s]", my_serial.isOpen() ? "Yes" : "No");
 
   // Initialize the control_cmd_sub
-  control_cmd_sub = nh_.subscribe("/drive_topic", 10,
+  control_cmd_sub = nh_.subscribe("/drive_topic", 50,
       &Drive_Serial::centralControlCallback, this);
 }
 
