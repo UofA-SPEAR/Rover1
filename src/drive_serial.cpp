@@ -51,29 +51,17 @@ Drive_Serial::Drive_Serial(const std::string port_str, uint32_t baud_num):
       &Drive_Serial::centralControlCallback, this);
 }
 
-template <typename T> int sign(T val){
-    return (T(0) < val) - (val < T(0));
-}
 
-const float wheelie_coeffecient = -0.05f;
 // Callback
 void Drive_Serial::centralControlCallback(
     const rover1::input_drive::ConstPtr& msg) {
 
   int8_t left = 127 * msg->left;
   int8_t right = 127 * msg->right;
-  ROS_INFO("[DRIVE] Sending {L:[%d] R:[%d] W: [%f]}", left, right, msg->wheelie);
+  ROS_INFO("[DRIVE] Sending {L:[%d] R:[%d]}", left, right);
 
-
-  if(msg->wheelie){
-      command('Q', left);
-      command('W', right);
-      command('A', msg->wheelie * right);
-      command('S', msg->wheelie * left);
-  }else{
-      command('R', right);
-      command('L', left);
-  }
+  command('R', right);
+  command('L', left);
 
 }
 
