@@ -69,7 +69,6 @@ void Drive_Serial::command(char cmd, int8_t val){
   const uint8_t byte[5] = {2, (uint8_t)cmd, (uint8_t)val, 
       (uint8_t) (((uint8_t)cmd)+((uint8_t)val)), 3};
   this->my_serial.write(byte, 5);
-  this->my_serial.flush();
 }
 
 int main(int argc, char **argv) {

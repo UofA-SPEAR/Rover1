@@ -30,7 +30,6 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
         global drive_publisher
         json_msg = json.loads(data)
         #print(json_msg)
-        print(":", end=":")
         if json_msg["type"] == "drive":
             # do the thing
             msg = input_drive()
