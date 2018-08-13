@@ -42,19 +42,7 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
         elif json_msg["type"] == "arm":
             # do the thing
             msg = input_arm()
-            msg.base = json_msg["base"]
-            msg.shoulder = json_msg["shoulder"]
-            msg.elbow = json_msg["elbow"]
-            msg.wrist_pitch = json_msg["wrist_pitch"]
-            msg.wrist_roll = json_msg["wrist_roll"]
-            msg.fingers = json_msg["fingers"]
-
-            #rospy.loginfo("Arm: Base = [%lf]", msg.base)
-            #rospy.loginfo("Arm: Shoulder = [%lf]", msg.shoulder)
-            #rospy.loginfo("Arm: Elbow = [%lf]", msg.elbow)
-            #rospy.loginfo("Arm: Wrist Pitch = [%lf]", msg.wrist_pitch)
-            #rospy.loginfo("Arm: Wrist Roll = [%lf]", msg.wrist_roll)
-            #rospy.loginfo("Arm: Fingers = [%lf]", msg.fingers)
+            msg.pot = int(json_msg["shoulder"])
             arm_publisher.publish(msg)
         elif json_msg["type"] == "rope":
             msg = input_rope()

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 from rover1.msg import input_rope
 

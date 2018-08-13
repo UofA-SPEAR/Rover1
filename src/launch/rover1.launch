@@ -4,7 +4,6 @@
 
 
   <node pkg="rover1" type="controller_proxy.py" name="controller_proxy_node" output="screen"/>
-  <node pkg="rover1" type="rope_spool.py" name="rope_node" output="screen"/>
 
   <node pkg="rover1" type="central_control" name="central_control_node" output="screen"/>
 

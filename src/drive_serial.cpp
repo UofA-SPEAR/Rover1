@@ -60,8 +60,9 @@ void Drive_Serial::centralControlCallback(
   int8_t right = 127 * msg->right;
   ROS_INFO("[DRIVE] Sending {L:[%d] R:[%d]}", left, right);
 
-  command('R', right);
   command('L', left);
+  usleep(10000); // sleep for x seconds
+  command('R', right);
 
 }
 
